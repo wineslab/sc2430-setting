@@ -26,7 +26,9 @@ def send_and_recv(port, baudrate, command_list):
         response = ser.read(100)  # Reads up to 100 bytes or until timeout
         while response:
             resTxt = response.decode('utf-8')
-            print(resTxt)
+            resCTxt = resTxt.replace('\r', '\n')
+            print(resCTxt)
+
             response = ser.readline(100)  # Reads up to 100 bytes or until timeout
 
     # Close the serial port
