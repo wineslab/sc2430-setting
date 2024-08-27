@@ -28,8 +28,7 @@ def send_and_recv(port, baudrate, command_list):
             resTxt = response.decode('utf-8')
             resCTxt = resTxt.replace('\r', '\n')
             print(resCTxt)
-
-            response = ser.readline(100)  # Reads up to 100 bytes or until timeout
+            response = ser.read(100)  # Reads up to 100 bytes or until timeout
 
     # Close the serial port
     ser.close()
@@ -65,7 +64,6 @@ def configure_device(args):
     cmd_list += ['HW:SW 0 TX 3 0']
     cmd_list += ['HW:SW 0 RX 0x1 0x01']
     cmd_list += [f'HW:GAIN 0 RX 0 {args.rxgain}']
-    cmd_list += ['HW:GAIN? 0 RX 0']
     cmd_list += [f'HW:GAIN 0 TX 0 {args.txgain}']
     filthex = get_filt_val(args.band)
     cmd_list += [f'HW:FLT 0 RX 0x1 {filthex}']
@@ -74,6 +72,12 @@ def configure_device(args):
 
     send_and_recv(args.port, args.baudrate, cmd_list)
 
+def read_configuration(args):
+    cmd_list = ['HW:SW? 0 RX 0x1','HW:SW? 0 RX 0x3','HW:SW? 0 TX 0x3']
+    cmd_list += ['HW:GAIN? 0 RX 0','HW:GAIN? 0 TX 0']
+    cmd_list += ['HW:FLT? 0 RX 0x1','HW:FLT? 0 TX 0x2']
+    print(cmd_list)
+    send_and_recv(args.port, args.baudrate, cmd_list)
 
 def gain_in_range(value):
     ivalue = int(value)
@@ -88,6 +92,10 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--band', default=41, type=int, help='NR Band')
     parser.add_argument('-t', '--txgain', default=0, type=gain_in_range, help='Tx gain')
     parser.add_argument('-r', '--rxgain', default=0, type=gain_in_range, help='Rx gain')
+    parser.add_argument('-m', '--readback', default=False, action='store_true')
     args = parser.parse_args()
-    configure_device(args)
+    if args.readback:
+        read_configuration(args)
+    else:
+        configure_device(args)
 
